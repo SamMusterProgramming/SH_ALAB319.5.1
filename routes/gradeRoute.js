@@ -104,9 +104,48 @@ route.route('/:id')
      if(!results) res.json({error:"can't find records for student"})
      res.json(results).status(200)
     }) 
-    
 
-   route.get('/class/:id',async(req,res)=>{
+    
+    // Get a class's grade data with student_id query
+    route.get('/class/:id',async(req,res)=>{ 
+        const class_id = req.params.id
+        if(!req.query.student) return res.status(404).json({error:"can't find student"})
+        const student_id = req.query.student 
+        const query = {class_id,student_id}
+        const result = await gradeModel.findOne(query)
+        if(!result) return res.status(404).json({error:"can't find class"})
+        return res.status(200).json(result)
+    })
+
+    // Update a class id
+    route.patch('/class/:id',async(req,res)=>{
+        if(!req.body.class_id) return res.json({error:"invalid class_id "}).status(404)
+        const class_id = Number(req.params.id) 
+        const query = {class_id:class_id} 
+        const results = await gradeModel.updateMany
+           (
+            query,
+           { $set: 
+            { class_id: req.body.class_id }
+           }
+            ) 
+        if(!results) return res.status(404).json({error:"can't find class"})
+        return res.status(200).json(results)    
+      })
+ 
+  // Delete a class by class_id    
+    route.delete('/class/:id',async(req,res)=>{
+        const class_id = req.params.id
+        const query = {class_id:class_id}
+        const results =  await gradeModel.deleteMany(query)
+        if(!results) res.json({error:"can't find records for classt"})
+        return res.json(results).status(200)
+    })
+
+
+
+  // I use aggregation here $match to class_id to generate each grade for class_id 
+   route.get('/classes/:id',async(req,res)=>{
     const class_id = Number(req.params.id)
     const results = await gradeModel.aggregate( 
         [{
@@ -116,13 +155,15 @@ route.route('/:id')
     return res.send(results)
 })
 
-//,validateGradeEntries
 
+
+// middleware
+// validate mongodb ObjectId 
 function validateMongoObjectId(req,res,next) {
    if (!ObjectId.isValid(req.params.id)) return res.status(404).json({Error:"error in request ID"});
    next()
 }
-   
+// validate grade entries , must have student_id and class_id
 function validateGradeEntries(req,res,next) {
     if(!req.body.student_id || ! req.body.class_id)
     return res.status(404).json({error:'class id and student id are required'})
