@@ -43,10 +43,10 @@ route.route('/:id')
     return res.json(results).status(200)
   })// delete a single grade with _id
    .delete(validateMongoObjectId,async(req,res)=>{
-    const result = await gradeModel.deleteOne({_id:req.params.id})
+    const result = await gradeModel.findByIdAndDelete({_id:req.params.id})
     if(!result) return res.json(`'can't find resource`).status(404)
     return res.json(result).status(200)
-   }) // update existent grade record with _id
+   }) // update existent grade record by _id
    .patch(validateMongoObjectId,async(req,res)=>{
     const id = req.params.id ; 
     const result = await gradeModel.findByIdAndUpdate(id,req.body)
@@ -58,9 +58,13 @@ route.route('/:id')
    route.patch('/:id/add',validateMongoObjectId,async(req,res)=>{
     const id = req.params.id 
     if(! req.body.type || !req.body.score) return res.status(404).json({error:"invalid data"})
-    const result = await gradeModel.findByIdAndUpdate(id,
-      { $push: { scores : req.body } }, 
-      { new: true })
+    const result = await gradeModel.findByIdAndUpdate(
+               id,
+              {
+                 $push: { scores : req.body }
+              }, 
+              { new: true }
+              ) 
     if(!result) return res.json({error:'not found'})  
     return res.status(201).json(result)  
    })
@@ -92,8 +96,14 @@ route.route('/:id')
      res.status(200).json(result.scores)    
     }) 
    
-    // Delete a student's grade data
-    route
+    // Delete a all student's grades data for student_id 
+    route.delete('/student/:id',async(req,res)=>{
+     const student_id = Number(req.params.id)
+     const filter = {student_id:student_id}
+     const results = await gradeModel.deleteMany(filter)
+     if(!results) res.json({error:"can't find records for student"})
+     res.json(results).status(200)
+    }) 
     
 
    route.get('/class/:id',async(req,res)=>{
