@@ -1,10 +1,10 @@
 const express = require('express')
-const connectDB = require('../db')
+
 const gradeModel = require('../models/grades')
 const { ObjectId } = require('mongodb');
 
 
-connectDB();
+
 
 const route = express.Router();
 
