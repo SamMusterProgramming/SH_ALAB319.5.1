@@ -151,7 +151,7 @@ route.route('/:id')
         [{
             $match:{class_id:class_id}
         }]
-        ).exec();
+        );
     return res.send(results)
 })
 

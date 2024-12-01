@@ -125,7 +125,7 @@ route.get('/class/stats/:id',async(req,res)=> {
     const results = await gradeModel.aggregate([
         {
         $match:{
-            _id:"$class_id"
+            class_id:class_id
         }
         },
         {
@@ -168,8 +168,8 @@ route.get('/class/stats/:id',async(req,res)=> {
        {
        $project: 
        {
-      _id: 0,
-            class_id: "$_id.class_id",
+           _id: 0,
+           class_id: "$_id.class_id",
            student_id:"$_id.student_id",
            avg: {
               $sum: [
